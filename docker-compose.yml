@@ -1,0 +1,35 @@
+version: "3.3"
+services:
+    mysql:
+        image: mysql:8.0.18
+        ports:
+            - "3306:3306"
+        volumes:
+            - "./mysql/init:/docker-entrypoint-initdb.d"
+            - "./mysql/data:/car/lib/mysql"
+            - "./mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf"
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        container_name: mysql01
+    nginx:
+        build: nginx/
+        hostname: ng01
+        ports:
+            - 80:80
+        volumes:
+            - ./nginx/conf.d:/etc/nginx/conf.d
+            - ./nginx/log:/var/log/nginx
+        container_name: nginx01
+    app:
+        build: tomcat/
+        hostname: appserver
+        ports:
+            - 8080:8080
+        volumes:
+            - ./tomcat/conf/server.xml:/usr/local/tomcat/conf/server.xml
+            - ./tomcat/log:/usr/local/tomcat/log
+            - ./tomcat/webapps:/usr/local/tomcat/webapps
+        container_name: app01
+        links:
+            - mysql
